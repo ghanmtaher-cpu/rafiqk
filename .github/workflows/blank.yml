@@ -2,9 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "رئيسي" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "رئيسي" ]
 
 jobs:
   build:
@@ -17,8 +17,11 @@ jobs:
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
         java-version: '17'
+        distribution: 'temurin'
+
+    - name: Generate Gradle Wrapper
+      run: gradle wrapper
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -31,4 +34,3 @@ jobs:
       with:
         name: rafiqk-apks
         path: app/build/outputs/apk/debug/app-debug.apk
-        
