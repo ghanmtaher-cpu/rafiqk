@@ -108,13 +108,8 @@ jobs:
             adb install -r app-release.apk
             python3 shots.py
 
-      - name: Resize to 720x1280
-        run: |
-          ls -l shots
-          for f in shots/*.png; do
-            convert "$f" -resize 720x1280 "${f%.png}-720x1280.png"
-          done
-          ls -l shots
+      - name: List screenshots
+        run: ls -l shots || true
 
       - name: Publish screenshots release
         uses: softprops/action-gh-release@v2
@@ -123,5 +118,5 @@ jobs:
           name: App screenshots
           make_latest: false
           files: |
-            shots/*-720x1280.png
+            shots/*.png
             shots/ui_last.xml
