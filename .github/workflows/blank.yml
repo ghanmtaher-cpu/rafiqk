@@ -34,6 +34,24 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
 
+      - name: Apply adhkar update (Muqaddim booklet, auto-advance)
+        run: |
+          cp patch/AzkarData.kt "$PROJECT_DIR/app/src/main/java/com/rafiqk/app/data/AzkarData.kt"
+          python3 - <<'PYEOF'
+          import os
+          d = os.environ["PROJECT_DIR"]
+          h = d + "/app/src/main/java/com/rafiqk/app/ui/HomeScreen.kt"
+          t = open(h, encoding="utf8").read()
+          old = "        if (count < item.repeat) {\n            count++\n        } else {\n            index = (index + 1) % list.size\n            count = 0\n        }"
+          new = "        count++\n        if (count >= item.repeat) {\n            index = (index + 1) % list.size\n            count = 0\n        }"
+          if old in t:
+              t = t.replace(old, new)
+          open(h, "w", encoding="utf8").write(t)
+          b = d + "/app/build.gradle.kts"
+          s = open(b).read().replace("versionCode = 5", "versionCode = 6").replace('versionName = "2.3.0"', 'versionName = "2.4.0"')
+          open(b, "w").write(s)
+          PYEOF
+
       - name: Download Cairo font
         run: |
           mkdir -p "$PROJECT_DIR/app/src/main/res/font"
