@@ -7,7 +7,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -76,3 +76,11 @@ jobs:
           name: rafiqk-apks
           path: extracted/**/app/build/outputs/apk/**/*.apk
           if-no-files-found: error
+
+      - name: Publish debug APK as public release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Rafiqk latest (debug APK)
+          make_latest: true
+          files: extracted/**/app/build/outputs/apk/debug/app-debug.apk
