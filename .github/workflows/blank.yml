@@ -52,6 +52,14 @@ jobs:
           open(b, "w").write(s)
           PYEOF
 
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$PROJECT_DIR/rafiqk.jks"
+          fi
+
       - name: Download Cairo font
         run: |
           mkdir -p "$PROJECT_DIR/app/src/main/res/font"
@@ -66,9 +74,17 @@ jobs:
           gradle-version: '8.13'
 
       - name: Build APK
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd "$PROJECT_DIR"
           gradle --no-daemon assembleDebug assembleRelease
+
+      - name: Verify release signature
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$(find extracted -name app-release.apk -print -quit)"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -84,3 +100,11 @@ jobs:
           name: Rafiqk latest (debug APK)
           make_latest: true
           files: extracted/**/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publish signed release APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: signed
+          name: Rafiqk signed release (for AppGallery)
+          make_latest: false
+          files: extracted/**/app/build/outputs/apk/release/app-release.apk
